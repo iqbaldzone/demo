@@ -1,0 +1,63 @@
+version: '3.7'
+services:
+  login-app:
+    image: login
+    ports:
+    - "8085:8085"
+    restart: always
+    depends_on:
+    - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://192.168.0.133:3306/dz?createDatabaseIfNotExist = true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    networks:
+    - micro-service
+
+  employee-app:
+#    image: employee
+    build:
+      context: employee
+      dockerfile: ./employee/Dockerfile
+    ports:
+    - "8084:8084"
+    restart: always
+    depends_on:
+    - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/dz?createDatabaseIfNotExist = true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    networks:
+    - micro-service
+
+  eureka-server:
+    image: eureka
+    ports:
+    - "8761:8761"
+    restart: always
+    networks:
+    - micro-service
+
+  db:
+    build:
+      context: mysql
+    image: mysql:latest
+    ports:
+    - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_DATABASE: dz
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+    - db-data:/var/lib/mysql
+    networks:
+    - micro-service
+
+volumes:
+  db-data:
+
+networks:
+  micro-service:
